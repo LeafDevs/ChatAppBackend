@@ -1,0 +1,6 @@
+messages.json
+userdata/
+sessions/
+node_modules/
+package-lock.json
+userdata.json

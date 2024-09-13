@@ -1,0 +1,31 @@
+{
+  "name": "fbla-comms",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.20.0",
+    "express-session": "^1.18.0",
+    "multer": "^1.4.5-lts.1",
+    "session-file-store": "^1.5.0",
+    "socket.io": "^4.7.5",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "electron": "^32.0.2"
+  },
+  "build": {
+    "appId": "com.example.myapp",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "background": "assets/bg.png"
+    }
+  }
+}

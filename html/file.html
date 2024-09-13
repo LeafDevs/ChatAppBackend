@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FBLA Chat</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <h2>Login</h2>
+            <input type="text" id="loginUsername" placeholder="Username">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button id="loginButton">Login</button>
+            <div id="loginError"></div>
+        </div>
+    </div>
+
+    <button id="hamburger" class="hamburger">☰</button>
+    <div id="app">
+        <div id="sidebar" class="sidebar">
+            <div id="profile" class="profile">
+                <img id="profile-picture" src="" alt="Profile Picture" class="profile-picture">
+                <div id="profile-info" class="profile-info">
+                    <span id="display-name" class="display-name"></span>
+                    <span id="username" class="username"></span>
+                </div>
+            </div>
+            <h2 class="sidebar-title">Active Users</h2>
+            <ul id="active-users" class="active-users"></ul>
+        </div>
+        <div id="main" class="main">
+            <div id="chat-container" class="chat-container">
+                <div id="messages" class="messages"></div>
+                <div id="upload-progress" class="upload-progress">
+                    <div id="upload-progress-bar" class="upload-progress-bar"></div>
+                </div>
+                <form id="message-form" class="message-form">
+                    <input type="file" id="file-upload" class="file-upload" accept="image/*,video/*,audio/*">
+                    <button type="button" id="file-upload-button" class="file-upload-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
+                    <input type="text" id="message-input" class="message-input" placeholder="Type a message...">
+                    <button type="submit" class="send-button">
+                        <svg class="icon" viewBox="0 0 20 20">
+                            <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"/>
+                        </svg>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Update Profile Picture</h2>
+            <input type="text" id="profilePictureUrl" placeholder="Enter profile picture URL">
+            <button id="updateProfilePicture">Update</button>
+        </div>
+    </div>
+    <div id="userInfoModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="userInfoAvatar" class="user-info-avatar" src="" alt="User avatar">
+            <div id="userInfoName" class="user-info-name"></div>
+            <div id="userInfoUsername" class="user-info-username"></div>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
