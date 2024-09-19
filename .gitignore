@@ -4,3 +4,5 @@ sessions/
 node_modules/
 package-lock.json
 userdata.json
+files.json
+keys.json

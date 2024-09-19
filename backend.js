@@ -85,7 +85,8 @@ io.on('connection', (socket) => {
             fileURL: data.fileURL || null,
             isImage: data.isImage || false,
             isSystem: data.isSystem || false,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
+            isAdmin: data.isAdmin || false
         };
 
         io.emit('chat message', message);
@@ -121,6 +122,37 @@ app.get('/api/v1/messages', (req, res) => {
 app.get('/api/v1/users', (req, res) => {
     const userdata = JSON.parse(fs.readFileSync('./userdata.json', 'utf8'));
     res.json(userdata.accounts);
+});
+
+app.post('/api/v1/invite', (req, res) => {
+    const { amount } = req.body;
+    // create a new Small UUIDv4 key do it amount times
+    const keys = [];
+    for (let i = 0; i < amount; i++) {
+        keys.push(crypto.randomUUID().substring(0, 10));
+    }
+    const keysJson = JSON.parse(fs.readFileSync('./keys.json', 'utf8'));
+    keysJson.keys.push(...keys);
+    fs.writeFileSync('./keys.json', JSON.stringify(keysJson, null, 2));
+    const message = keys.map(key => `${key}`).join('\n');
+    res.json({ success: true, message: message });
+});
+
+
+app.post('/api/v1/register', (req, res) => {
+    const { username, password, inviteKey } = req.body;
+    const keys = JSON.parse(fs.readFileSync('./keys.json', 'utf8'));
+    const key = keys.keys.find(k => k === inviteKey);
+    if (key) {
+        keys.keys.splice(keys.keys.indexOf(key), 1);
+        fs.writeFileSync('./keys.json', JSON.stringify(keys, null, 2));
+        const userdata = JSON.parse(fs.readFileSync('./userdata.json', 'utf8'));
+        userdata.accounts.push({ username, password, profilePicture: 'http://172.20.10.8:3001/userdata/leaf-19::09::2024::10::55.jpg', nickname: username, isAdmin: false });
+        fs.writeFileSync('./userdata.json', JSON.stringify(userdata, null, 2));
+        res.json({ success: true });
+    } else {
+        res.status(401).json({ success: false, message: 'Invalid invite key' });
+    }
 });
 
 app.post('/api/v1/users/update', (req, res) => {
