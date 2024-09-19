@@ -19,7 +19,7 @@ const sessionMiddleware = session({
 });
 
 
-app.use(sessionMiddleware, express.urlencoded({ extended: true }), express.json(), express.static('html'));
+app.use(sessionMiddleware, express.urlencoded({ extended: true }), express.json(), express.static(__dirname + '/build'));
 
 const users = new Set();
 
@@ -112,7 +112,6 @@ io.on('connection', (socket) => {
 
 });
 
-app.get('/', (req, res) => res.sendFile(__dirname + '/html/file.html'));
 
 app.get('/api/v1/messages', (req, res) => {
     const messages = JSON.parse(fs.readFileSync('./messages.json', 'utf8'));
