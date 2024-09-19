@@ -222,30 +222,7 @@ window.addEventListener('click', (event) => {
 });
 
 socket.on('chat message', async (data) => {
-    const messageElement = document.createElement('div');
-    messageElement.className = `message ${data.username === username ? 'self' : ''}`;
-    
-    const userData = await fetchUserData(data.username);
-    const avatarUrl = userData.profilePicture;
-    
-    // Convert URLs to clickable links
-    const messageContent = data.message.replace(
-        /(https?:\/\/[^\s]+)/g, 
-        '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
-    );
-    
-    messageElement.innerHTML = `
-        <img class="message-avatar" src="${avatarUrl || ''}" alt="${data.username}'s avatar" onerror="this.src='https://via.placeholder.com/36?text=User'">
-        <div class="message-content">
-            <div class="message-username">${data.username === username ? 'You' : userData.nickname || data.username}</div>
-            <div class="message-text">${messageContent}</div>
-        </div>
-    `;
-    
-    messageElement.querySelector('.message-avatar').addEventListener('click', () => {
-        showUserInfo(data.username);
-    });
-    
+    const messageElement = createMessageElement(data);
     messages.appendChild(messageElement);
     messages.scrollTop = messages.scrollHeight;
 });
@@ -256,7 +233,7 @@ async function updateActiveUsers(users) {
         const userData = await fetchUserData(user);
         const userElement = document.createElement('li');
         userElement.innerHTML = `
-            <img src="${userData.profilePicture || 'https://via.placeholder.com/36?text=User'}" alt="${user}'s avatar" onerror="this.src='https://via.placeholder.com/36?text=User'">
+            <img src="${userData.profilePicture || 'https://via.placeholder.com/30?text=User'}" alt="${user}'s avatar" onerror="this.src='https://via.placeholder.com/30?text=User'">
             ${userData.nickname || user}
         `;
         userElement.addEventListener('click', () => showUserInfo(user));
@@ -269,8 +246,8 @@ socket.on('update users', (users) => {
 });
 
 // Hamburger menu functionality
-const hamburger = document.getElementById('hamburger');
-const sidebar = document.getElementById('sidebar');
+const hamburger = document.getElementById('sidebar-toggle');
+const sidebar = document.querySelector('.sidebar');
 
 hamburger.addEventListener('click', () => {
     sidebar.classList.toggle('active');
@@ -281,4 +258,47 @@ document.addEventListener('click', (e) => {
     if (window.innerWidth <= 768 && !sidebar.contains(e.target) && e.target !== hamburger) {
         sidebar.classList.remove('active');
     }
+});
+
+async function createMessageElement(data) {
+    const messageElement = document.createElement('div');
+    messageElement.className = `message ${data.username === username ? 'self' : ''}`;
+    
+    const userData = await fetchUserData(data.username);
+    const avatarUrl = userData.profilePicture;
+    
+    // Check if the message is an image link
+    const isImageLink = data.message.match(/\.(jpeg|jpg|gif|png)$/) != null;
+    
+    let messageContent;
+    if (isImageLink) {
+        messageContent = `<img src="${data.message}" alt="Shared image" onclick="showEnlargedImage('${data.message}')">`;
+    } else {
+        messageContent = data.message.replace(
+            /(https?:\/\/[^\s]+)/g, 
+            '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+    }
+    
+    messageElement.innerHTML = `
+        <img class="message-avatar" src="${avatarUrl || ''}" alt="${data.username}'s avatar" onerror="this.src='https://via.placeholder.com/40?text=User'">
+        <div class="message-content">
+            <div class="message-username">${data.username === username ? 'You' : userData.nickname || data.username}</div>
+            <div class="message-text">${messageContent}</div>
+        </div>
+    `;
+    
+    return messageElement;
+}
+
+function showEnlargedImage(src) {
+    const modal = document.getElementById('imageModal');
+    const enlargedImage = document.getElementById('enlargedImage');
+    enlargedImage.src = src;
+    modal.style.display = 'block';
+}
+
+// Add event listener to close the image modal
+document.querySelector('#imageModal .close').addEventListener('click', () => {
+    document.getElementById('imageModal').style.display = 'none';
 });
