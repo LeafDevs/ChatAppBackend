@@ -8,6 +8,9 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const cors = require('cors');
+const crypto = require('crypto');
+const ipAnonymize = require('ip-anonymize');
+
 app.use(cors({
     origin: ['http://localhost:3000', 'http://172.20.10.8:3000'], // Allow both localhost and IP address
     credentials: true
@@ -17,7 +20,6 @@ const sessionMiddleware = session({
     secret: 'your_secret_key', resave: false, saveUninitialized: true, cookie: { secure: false },
     store: new FileStore({ path: './sessions', ttl: 86400, reapInterval: 3600 }),
 });
-
 
 app.use(sessionMiddleware, express.urlencoded({ extended: true }), express.json(), express.static(__dirname + '/build'));
 
@@ -32,8 +34,6 @@ const storage = multer.diskStorage({
     }
 });
 
-const crypto = require('crypto');
-
 app.post('/api/v1/upload', multer({ storage }).single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
 
@@ -47,19 +47,22 @@ app.post('/api/v1/upload', multer({ storage }).single('file'), async (req, res) 
         // If the hash exists, use the existing filename
         const existingFilename = filesJson.files[fileHash];
         await fs.promises.unlink(req.file.path); // Delete the newly uploaded file
-        return res.json({ success: true, fileUrl: `http://172.20.10.8:3001/userdata/${existingFilename}` });
+        return res.json({ success: true, fileUrl: `http://172.20.10.8:3000/userdata/${existingFilename}` });
     }
 
     // If the hash doesn't exist, add it to files.json
     filesJson.files[fileHash] = req.file.filename;
     await fs.promises.writeFile('./files.json', JSON.stringify(filesJson, null, 4));
 
-    res.json({ success: true, fileUrl: `http://172.20.10.8:3001/userdata/${req.file.filename}` });
+    res.json({ success: true, fileUrl: `http://172.20.10.8:3000/userdata/${req.file.filename}` });
 });
 
 app.use('/userdata', express.static('userdata'));
 
-io.use((socket, next) => sessionMiddleware(socket.request, {}, next));
+io.use((socket, next) => {
+    socket.request.ip = ipAnonymize(socket.request.ip);
+    sessionMiddleware(socket.request, {}, next);
+});
 
 app.get('/api/v1/logout', (req, res) => {
     req.session.destroy();
@@ -146,7 +149,7 @@ app.post('/api/v1/register', (req, res) => {
         keys.keys.splice(keys.keys.indexOf(key), 1);
         fs.writeFileSync('./keys.json', JSON.stringify(keys, null, 2));
         const userdata = JSON.parse(fs.readFileSync('./userdata.json', 'utf8'));
-        userdata.accounts.push({ username, password, profilePicture: 'http://172.20.10.8:3001/userdata/leaf-19::09::2024::10::55.jpg', nickname: username, isAdmin: false });
+        userdata.accounts.push({ username, password, profilePicture: 'http://172.20.10.8:3000/userdata/leaf-19::09::2024::10::55.jpg', nickname: username, isAdmin: false });
         fs.writeFileSync('./userdata.json', JSON.stringify(userdata, null, 2));
         res.json({ success: true });
     } else {
@@ -191,4 +194,4 @@ app.get('/api/v1/userdata/user/:username', (req, res) => {
     }
 });
 
-http.listen(process.env.PORT || 3001, () => console.log(`Server running on port ${process.env.PORT || 3000}`));
+http.listen(process.env.PORT || 3000, () => console.log(`Server running on port ${process.env.PORT || 3000}`));
